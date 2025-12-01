@@ -19,6 +19,15 @@ public class CommandWords {
         this.validCommands.put("inventory", "List current inventory");
         this.validCommands.put("take", "Pick up an item");
         this.validCommands.put("drop", "Drop the item");
+        this.validCommands.put("open", "Opening");
+        this.validCommands.put("buy", "Buy something");
+        this.validCommands.put("drink", "Drink something");
+        this.validCommands.put("get sick", "Getting sick");
+        this.validCommands.put("read", "Reading a letter");
+        this.validCommands.put("restart", "Restarting the game");
+        this.validCommands.put("save", "Saving your game");
+        this.validCommands.put("map", "Showing map");
+
     }
 
     public boolean isCommand(String commandWord) {

@@ -29,6 +29,26 @@ public class Parser {
         return this.commands.isCommand(word1) ? new Command(word1, word2) : new Command((String)null, word2);
     }
 
+    public Command parseCommand(String inputLine) {
+        String word1 = null;
+        String word2 = null;
+
+        Scanner tokenizer = new Scanner(inputLine);
+        if (tokenizer.hasNext()) {
+            word1 = tokenizer.next();
+            if (tokenizer.hasNext()) {
+                word2 = tokenizer.nextLine().trim();
+            }
+        }
+
+        if (!commands.isCommand(word1)) {
+            return new Command(null, word2);
+        }
+
+        return new Command(word1, word2);
+    }
+
+
     public void showCommands() {
         this.commands.showAll();
     }

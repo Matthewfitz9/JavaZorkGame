@@ -1,0 +1,2 @@
+room=outside in the city centre
+inventory=Envelope (Open Me),
