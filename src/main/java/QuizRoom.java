@@ -7,66 +7,39 @@ public class QuizRoom extends Room {
 
     private WeatherSystem weather;
     private boolean passed = false;
-    private int timeLeft = 90;
+    private List<Pair<String, String>> qaPairs = new ArrayList<>();
 
     public QuizRoom(String description) {
         super(description);
         this.weather = new WeatherSystem();
-    }
 
-    public boolean hasPassedQuiz() {
-        return passed;
+        boolean foggy = weather.getCurrentWeather().equalsIgnoreCase("foggy");
+
+        if (foggy) {
+            qaPairs.add(new Pair<>("Wht keyword is used in Jva to create a new objct?", "new"));
+            qaPairs.add(new Pair<>("In Jav, what is te name of the mehod tht sarts evry program?", "main"));
+            qaPairs.add(new Pair<>("Wat keyword lets one clas use the methods and varbles of a parnt class?", "extends"));
+            qaPairs.add(new Pair<>("What symol do you ue to end a statement in ava?", ";"));
+            qaPairs.add(new Pair<>("Wha Jva type is use to sore whole numbers?", "int"));
+
+        } else {
+            qaPairs.add(new Pair<>("What keyword is used in Java to create a new object?", "new"));
+            qaPairs.add(new Pair<>("In Java, what is the name of the method that starts every program?", "main"));
+            qaPairs.add(new Pair<>("What keyword lets one class use the methods of a parent class?", "extends"));
+            qaPairs.add(new Pair<>("What symbol do you use to end a statement in Java?", ";"));
+            qaPairs.add(new Pair<>("What Java type is used to store whole numbers?", "int"));
+        }
     }
 
     public String getWeather() {
         return weather.getCurrentWeather();
     }
 
-    public int getTimeLeft() {
-        return timeLeft;
+
+    public List<Pair<String, String>> getQAPairs() {
+        return qaPairs;
     }
 
-    // ---------------------------
-    // RETURN QUESTIONS AS STRINGS
-    // ---------------------------
-    public List<String> getQuestions() {
-
-        List<String> q = new ArrayList<>();
-        boolean foggy = weather.getCurrentWeather().equalsIgnoreCase("foggy");
-
-        if (foggy) {
-            q.add("Wht keyword is used in Jva to create a new objct?");
-            q.add("In Jav, what is te name of the mehod tht sarts evry program?");
-            q.add("Wat keyword lets one clas use the methods and varbles of a parnt class?");
-            q.add("What symol do you ue to end a statement in ava?");
-            q.add("Wha Jva type is use to sore whole numbers?");
-        } else {
-            q.add("What keyword is used in Java to create a new object?");
-            q.add("In Java, what is the name of the method that starts every program?");
-            q.add("What keyword lets one class use the methods of a parent class?");
-            q.add("What symbol do you use to end a statement in Java?");
-            q.add("What Java type is used to store whole numbers?");
-        }
-
-        return q;
-    }
-
-    // ------------------------------
-    // THE CORRECT ANSWERS (IN ORDER)
-    // ------------------------------
-    public List<String> getAnswers() {
-        List<String> a = new ArrayList<>();
-        a.add("new");
-        a.add("main");
-        a.add("extends");
-        a.add(";");    // semicolon also allowed
-        a.add("int");
-        return a;
-    }
-
-    // ----------------------------------------
-    // GUI sends number of correct answers here
-    // ----------------------------------------
     public boolean checkQuiz(int correct, Character player) {
         if (correct >= 3) {
             passed = true;

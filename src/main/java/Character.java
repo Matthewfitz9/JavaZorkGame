@@ -17,11 +17,6 @@ public class Character {
     }
 
 
-    public String getName() {
-        return this.name;
-    }
-
-
     public Room getCurrentRoom() {
         return this.currentRoom;
     }
@@ -63,18 +58,6 @@ public class Character {
         return sb.toString();
     }
 
-
-    public void listItems() {
-        if (inventory.isEmpty()) {
-            System.out.println("Your inventory is currently empty.");
-        } else {
-            int i = 1;
-            for (Item item : inventory) {
-                System.out.println(i + ". " + item.getName());
-                i++;
-            }
-        }
-    }
 
     public List<Item> getInventory() {
         return inventory;

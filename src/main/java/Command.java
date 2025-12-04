@@ -20,10 +20,6 @@ public class Command {
         return this.secondWord;
     }
 
-    public boolean isUnknown() {
-        return this.commandWord == null;
-    }
-
     public boolean hasSecondWord() {
         return this.secondWord != null;
     }

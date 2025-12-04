@@ -47,9 +47,4 @@ public class Parser {
 
         return new Command(word1, word2);
     }
-
-
-    public void showCommands() {
-        this.commands.showAll();
-    }
 }

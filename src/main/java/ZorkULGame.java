@@ -21,15 +21,15 @@ public class ZorkULGame {
     private boolean skip = false;
 
 
+
     public ZorkULGame() {
         createRooms();
         player = new Character("Main player", cityCentre);
 
-        if (!skip) {   // <---- only load save if not restarting
+        if (!skip) {
             loadGame();
-        } // Try to load
+        }
 
-        // If no envelope was loaded (new game), give starting envelope
         if (!player.hasItem("Envelope (Open Me)")) {
             player.addItem(new Item("Envelope (Open Me)", "A closed envelope"));
         }
@@ -130,21 +130,22 @@ public class ZorkULGame {
             return "You cannot read that.";
         }
 
-        if (!player.hasItem("Envelope (Open Me)")) {
-            return "You do not have the envelope anymore.";
-        }
-
         if (j == 0) {
             return "You must open the envelope before reading it.";
         }
-
-        return "In this game you must navigate around the map completing challenges and collecting items with the goal of getting into the skyscraper.\nGood Luck.";
+        player.removeItem("Envelope (Open Me)");
+        return "In this game you must navigate around the map completing challenges and collecting items with the goal of getting into the skyscraper.\nThe goal is to get to the skyscraper using the least amount of commands as possible.\nGood Luck.";
     }
 
 
     private String openEnvelope() {
-        j++;
-        return "Inside the envelope there is a letter";
+        if (player.hasItem("Envelope (Open Me)")) {
+            j++;
+            return "Inside the envelope there is a letter";
+        }
+        else {
+            return "You no longer have the envelope";
+        }
     }
 
     private String showMap() {
@@ -287,10 +288,8 @@ public class ZorkULGame {
     private String saveGame() {
         try (PrintWriter writer = new PrintWriter(new FileWriter("save.txt"))) {
 
-            // Save current room
             writer.println("room=" + player.getCurrentRoom().getDescription());
 
-            // Save inventory list
             writer.print("inventory=");
             for (Item item : player.getInventory()) {
                 writer.print(item.getName() + ",");
@@ -318,7 +317,7 @@ public class ZorkULGame {
     private void loadGame() {
         File file = new File("save.txt");
         if (!file.exists()) {
-            return;  // just return quietly
+            return;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -347,7 +346,7 @@ public class ZorkULGame {
             }
 
         } catch (IOException e) {
-            // ignore for GUI
+            System.out.println("Error loading saved file: " + e.getMessage());
         }
     }
 
@@ -377,7 +376,6 @@ public class ZorkULGame {
             return "There is no door!";
         }
 
-        // Quiz room
         if (nextRoom instanceof QuizRoom) {
             QuizRoom qr = (QuizRoom) nextRoom;
             GameGUIJavaFX.QuizWindow.showQuiz(qr, player);
@@ -385,7 +383,6 @@ public class ZorkULGame {
         }
 
 
-        // Skyscraper check
         if (nextRoom.getDescription().equalsIgnoreCase("inside the skyscraper")) {
 
             if (!player.hasItem("shovel") || !player.hasItem("key") || !player.hasItem("flower") || !player.hasItem("shot") || !player.hasItem("certificate")) {
@@ -393,15 +390,14 @@ public class ZorkULGame {
                 return "The door to the skyscraper is locked.\nYou must collect:\n- A shovel from the toilet\n- A key hidden in the office\n- A flower from the toilet\n- A certificate from the quiz room\n- Have taken a shot from in the pub";
             }
 
+            player.setCurrentRoom(nextRoom);
 
             gameOver = true;
             return "You enter the skyscraper\nYour score is: " + s + "\nYOU WIN THE GAME!";
         }
 
-        // Move player
         player.setCurrentRoom(nextRoom);
 
-        // Office rules
         if (nextRoom.getDescription().equalsIgnoreCase("in the computing admin office")) {
 
             if (!player.hasItem("shovel")) {
@@ -413,7 +409,6 @@ public class ZorkULGame {
             }
         }
 
-        // Toilet timer
         if (nextRoom.getDescription().equalsIgnoreCase("in the toilet")) {
             if (timerRunning) {
                 timerRunning = false;
@@ -469,7 +464,7 @@ public class ZorkULGame {
                     if (item.getName().equalsIgnoreCase(second)) {
 
                         if (item instanceof Usable usable) {
-                            return usable.use(player);  // POLYMORPHISM
+                            return usable.use(player);
                         }
 
                         return "You cannot use that.";
@@ -500,6 +495,20 @@ public class ZorkULGame {
                 return "Unknown command: " + cmd;
         }
     }
+
+    public String processCommand(Command command) {
+        String word1 = command.getCommandWord();
+        String word2 = command.getSecondWord();
+
+        if (word2 != null) {
+            return processCommandGUI(word1 + " " + word2);
+        } else {
+            return processCommandGUI(word1);
+        }
+    }
+
+
+
 }
 
 

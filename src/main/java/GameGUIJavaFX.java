@@ -9,6 +9,10 @@ import javafx.stage.Modality;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.animation.AnimationTimer;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
+
 
 public class GameGUIJavaFX extends Application {
 
@@ -17,6 +21,10 @@ public class GameGUIJavaFX extends Application {
     private TextField input = new TextField();
     private TextArea output = new TextArea();
     private ComboBox<String> inventoryDrop = new ComboBox<>();
+    private Parser parser = new Parser();
+    private ImageView roomImage = new ImageView();
+    private VBox rightSide;
+
 
 
     public static void main(String[] args) {
@@ -26,23 +34,23 @@ public class GameGUIJavaFX extends Application {
     @Override
     public void start(Stage stage) {
 
+        roomImage.setImage(new Image(getClass().getResource("/images/city.png").toExternalForm()));
+
+        inventoryDrop.setEditable(true);
         inventoryDrop.setPromptText("Inventory");
-        inventoryDrop.setStyle("-fx-prompt-text-fill: white; -fx-text-fill: white; -fx-background-color:#1f2937;");
+        inventoryDrop.getEditor().setStyle("-fx-prompt-text-fill: white; -fx-text-fill: white; -fx-background-color:#1f2937;");
         inventoryDrop.setMaxWidth(Double.MAX_VALUE);
 
-        // --- Output Area ---
         output.setEditable(false);
         output.setStyle("-fx-control-inner-background:#111827; -fx-text-fill:#39FF14; -fx-font-size:14px;");
         output.setPrefHeight(200);
         VBox.setVgrow(output, Priority.ALWAYS);
 
-        // --- Input Text Box ---
         input.setPromptText("Enter command here...");
-        input.setStyle("-fx-background-color:#1f2937; -fx-text-fill:white; -fx-prompt-text-fill:gray;");
+        input.setStyle("-fx-background-color:#1f2937; -fx-text-fill: white; -fx-prompt-text-fill: white;");
         input.setMaxWidth(Double.MAX_VALUE);
         input.setOnAction(e -> handleInput());  // Press ENTER to submit
 
-        // --- Direction Buttons ---
         b1 = new Button("North");
         b2 = new Button("East");
         b3 = new Button("South");
@@ -50,14 +58,29 @@ public class GameGUIJavaFX extends Application {
         b5 = new Button("Save");
         b6 = new Button("Restart");
 
-        b1.setOnAction(e -> output.appendText(game.processCommandGUI("go north") + "\n"));
-        b2.setOnAction(e -> output.appendText(game.processCommandGUI("go east") + "\n"));
-        b3.setOnAction(e -> output.appendText(game.processCommandGUI("go south") + "\n"));
-        b4.setOnAction(e -> output.appendText(game.processCommandGUI("go west") + "\n"));
+        b1.setOnAction(e -> {
+            output.appendText(game.processCommandGUI("go north") + "\n");
+            updateRoomImage();
+        });
+
+        b2.setOnAction(e -> {
+            output.appendText(game.processCommandGUI("go east") + "\n");
+            updateRoomImage();
+        });
+        b3.setOnAction(e -> {
+            output.appendText(game.processCommandGUI("go south") + "\n");
+            updateRoomImage();
+        });
+        b4.setOnAction(e -> {
+            output.appendText(game.processCommandGUI("go west") + "\n");
+            updateRoomImage();
+        });
         b5.setOnAction(e -> output.appendText(game.processCommandGUI("save")));
         b6.setOnAction(e -> { output.appendText(game.processCommandGUI("restart") + "\n");
             restartButtons();
-    });
+            updateInventoryDrop();
+            updateRoomImage();
+        });
 
         String buttonStyle =
                 "-fx-background-color: linear-gradient(#3b82f6, #1e3a8a);" +
@@ -73,27 +96,53 @@ public class GameGUIJavaFX extends Application {
         b5.setStyle(buttonStyle);
         b6.setStyle(buttonStyle);
 
+        b1.setMinWidth(90);
+        b2.setMinWidth(90);
+        b3.setMinWidth(90);
+        b4.setMinWidth(90);
+        b5.setMinWidth(90);
+        b6.setMinWidth(90);
+
 
         HBox buttonRow = new HBox(10, b1, b2, b3, b4, b5, b6);
-        HBox.setMargin(b5, new Insets(0, 0, 0, 600));
+        HBox.setMargin(b5, new Insets(0, 0, 0, 100));
         buttonRow.setAlignment(Pos.CENTER);
-
-        // --- Layout ---
-        VBox root = new VBox(10, output, buttonRow, input, inventoryDrop);
-        root.setPadding(new Insets(10));
-        root.setStyle("-fx-background-color: #0a0f24;");
+        VBox.setVgrow(roomImage, Priority.ALWAYS);
 
 
-        Scene scene = new Scene(root, 400, 300);
+
+        HBox mainLayout = new HBox(20);   // left and right sections
+        VBox leftSide = new VBox(10, output, buttonRow, input, inventoryDrop);
+        rightSide = new VBox();
+        rightSide.setPadding(new Insets(10));
+        rightSide.setAlignment(Pos.CENTER);
+        rightSide.setStyle("-fx-background-color: black;");
+        rightSide.setMinWidth(500);
+        rightSide.setMinHeight(400);
+        HBox.setHgrow(rightSide, Priority.ALWAYS);
+        VBox.setVgrow(rightSide, Priority.ALWAYS);
+        VBox.setVgrow(roomImage, Priority.ALWAYS);
+
+
+        roomImage.setPreserveRatio(true); // keeps correct proportions
+        roomImage.setPreserveRatio(true);
+        roomImage.fitWidthProperty().bind(rightSide.widthProperty());
+
+
+        mainLayout.getChildren().addAll(leftSide, rightSide);
+        mainLayout.setPadding(new Insets(10));
+        mainLayout.setStyle("-fx-background-color: #0a0f24;");
+
+
+        Scene scene = new Scene(mainLayout, 1000, 500);
         stage.setTitle("Java Zork: Tokyo Drift");
         stage.setScene(scene);
         stage.show();
 
-        // Show starting room
         output.appendText(game.printWelcome());
         updateInventoryDrop();
+        updateRoomImage();
 
-        // --- TIMER FIX ---
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -106,34 +155,37 @@ public class GameGUIJavaFX extends Application {
                 if (game.isGameOver()) {
                     input.setEditable(false);
                     input.setDisable(true);
+
                     output.appendText("\n--- GAME OVER ---\n");
                     b1.setDisable(true);
                     b2.setDisable(true);
                     b3.setDisable(true);
                     b4.setDisable(true);
                     b5.setDisable(true);
-                    stop();  // << stops the animation timer
+                    stop();
                 }
             }
         };
 
-        timer.start();   // <<<<<< THIS MAKES THE TIMER WORK
+        timer.start();
+
     }
 
-    // --- Handle Enter key input ---
     private void handleInput() {
         String command = input.getText().trim();
 
         if (!command.isEmpty()) {
-            String result = game.processCommandGUI(command);
+            Command parsed = parser.parseCommand(command);
+            String result = game.processCommand(parsed);     // ✓ Parser integrated
             output.appendText("> " + command + "\n" + result + "\n\n");
             updateInventoryDrop();
+            updateRoomImage();
         }
 
-        input.clear();  // Clear entry field
+        input.clear();
     }
 
-    // --- QUIZ WINDOW ---
+
     public static class QuizWindow {
 
         public static String showQuiz(QuizRoom quizRoom, Character player) {
@@ -152,13 +204,13 @@ public class GameGUIJavaFX extends Application {
             weatherLabel.setStyle("-fx-text-fill:#ff00ff; -fx-font-size:16px;");
             info.setStyle("-fx-text-fill:white;");
 
-            // QUESTIONS
-            List<String> questions = quizRoom.getQuestions();
+            List<Pair<String, String>> qaPairs = quizRoom.getQAPairs();
             List<TextField> answerFields = new ArrayList<>();
 
             VBox questionBox = new VBox(5);
-            for (int i = 0; i < questions.size(); i++) {
-                Label qLabel = new Label((i + 1) + ". " + questions.get(i));
+            for (int i = 0; i < qaPairs.size(); i++) {
+                Pair<String, String> qa = qaPairs.get(i);
+                Label qLabel = new Label((i + 1) + ". " + qa.getFirst());
                 qLabel.setStyle("-fx-text-fill:#39FF14; -fx-font-size:14px;");
                 TextField ans = new TextField();
                 answerFields.add(ans);
@@ -170,13 +222,16 @@ public class GameGUIJavaFX extends Application {
 
             submit.setOnAction(e -> {
                 int correct = 0;
-                List<String> correctAnswers = quizRoom.getAnswers();
 
-                for (int i = 0; i < answerFields.size(); i++) {
+                for (int i = 0; i < qaPairs.size(); i++) {
+
                     String typed = answerFields.get(i).getText().trim().toLowerCase();
-                    String correctAns = correctAnswers.get(i);
+                    String correctAns = qaPairs.get(i).getSecond(); // The answer
 
-                    if (correctAns.equals(typed) || (i == 3 && typed.equals("semicolon"))) {
+                    // Allow typed "semicolon" → ";"
+                    if (correctAns.equals(typed) ||
+                            (correctAns.equals(";") && typed.equals("semicolon"))) {
+
                         correct++;
                     }
                 }
@@ -205,8 +260,15 @@ public class GameGUIJavaFX extends Application {
 
     private void updateInventoryDrop() {
         inventoryDrop.getItems().clear();
+
+        if (game.getPlayer().getInventory().isEmpty()) {
+            inventoryDrop.getItems().add("Inventory is currently empty");
+            return;
+        }
+
         for (Item item : game.getPlayer().getInventory()) {
             inventoryDrop.getItems().add(item.getName());
+
         }
     }
 
@@ -220,5 +282,31 @@ public class GameGUIJavaFX extends Application {
         input.setEditable(true);
     }
 
+    private void updateRoomImage() {
+        String desc = game.getPlayer().getCurrentRoom().getDescription().toLowerCase();
+        String path = null;
 
+        if (desc.contains("city centre")) path = "/images/city.png";
+        else if (desc.contains("local pub")) path = "/images/pub.png";
+        else if (desc.contains("toilet")) path = "/images/toilet.png";
+        else if (desc.contains("computing admin office")) path = "/images/office.png";
+        else if (desc.contains("quiz room")) path = "/images/quiz.png";
+        else if (desc.contains("skyscraper")) path = "/images/skyscraper.png";
+
+        if (path != null) {
+            BackgroundImage bg = new BackgroundImage(
+                    new Image(getClass().getResource(path).toExternalForm()),
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT,
+                    BackgroundPosition.CENTER,
+                    new BackgroundSize(
+                            BackgroundSize.AUTO, BackgroundSize.AUTO,
+                            true, true, true, false)
+            );
+
+            rightSide.setBackground(new Background(bg));
+        }
+    }
 }
+
+

@@ -27,6 +27,7 @@ public class CommandWords {
         this.validCommands.put("restart", "Restarting the game");
         this.validCommands.put("save", "Saving your game");
         this.validCommands.put("map", "Showing map");
+        this.validCommands.put("use", "Using an item");
 
     }
 
@@ -40,7 +41,5 @@ public class CommandWords {
         for(String command : this.validCommands.keySet()) {
             System.out.print(command + " ");
         }
-
-        System.out.println();
     }
 }
